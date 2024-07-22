@@ -105,23 +105,23 @@ def show_movies(message):
     infoGenre = genreUn[0][0]
 
     if numParams == 3:
-        cur.execute("SELECT id_country FROM countries WHERE name_country = ?", (userInputInfoMovie[1],))
+        cur.execute("SELECT id_country FROM countries WHERE name_country = ?", (userInputInfoMovie[1].capitalize(),))
         countryUn = cur.fetchall()
         infoCountry = countryUn[0][0]
-        urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?countries={infoCountry.capitalize()}&genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[1]]}&ratingFrom=4&ratingTo=10&yearFrom=1000&yearTo=3000&page={random.randint(1, 20)}'
+        urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?countries={infoCountry}&genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[2]]}&ratingFrom=4&ratingTo=10&yearFrom=1990&yearTo=3000&page={random.randint(1, 6)}'
 
 
     elif numParams == 2:
-            urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[1]]}&ratingFrom=4&ratingTo=10&yearFrom=1000&yearTo=3000&page={random.randint(1, 20)}'
+        urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[1]]}&ratingFrom=4&ratingTo=10&yearFrom=1990&yearTo=3000&page={random.randint(1, 6)}'
 
     else:
         bot.send_message(message.chat.id, "Некорректный формат вводимых данных. Попробуйте снова!", get_movies(message))
     cur.close()
     conn.close()
 
-    urlMovie = 'https://kinopoiskapiunofficial.tech/api/v2.2/films'
+    #urlMovie = 'https://kinopoiskapiunofficial.tech/api/v2.2/films'
 
-    resShowMovie = requests.get(urlMovie, headers=headers)
+    resShowMovie = requests.get(urlWith, headers=headers)
 
     if resShowMovie.status_code == 200:
         movieList = resShowMovie.json()
