@@ -126,6 +126,7 @@ def show_movies(message):
     if resShowMovie.status_code == 200:
         movieList = resShowMovie.json()
         if "items" in movieList:
+            #TODO фильмы должны выпадать случайным образом
             for item in movieList["items"]:
                 kinoId = item.get("kinopoiskId", "N/A")
                 kinoName = item.get("nameRu", "N/A")
@@ -136,51 +137,46 @@ def show_movies(message):
                 rateImdb = item.get("ratingImdb", "N/A")
                 year = item.get("year", "N/A")
                 poster = item.get("posterUrl")
+                trailerUrl = trailerMovie(kinoId)
                 caption = (f"<b>{kinoName} / {kinoNameEn}</b>\n"
                            f"Жанр: <b>{', '.join(genres)}</b>\n"
                            f"Страна: <b>{countryInfo}</b>\n"
                            f"Год выпуска: <b>{year}</b>\n"
                            f"Рейтинг Кинопоиска: <b>{rateKino}</b>\n"
-                           f"Рейтинг в мире: <b>{rateImdb}</b>")
+                           f"Рейтинг в мире: <b>{rateImdb}</b>\n"
+                           f"Трейлер: {trailerUrl} ")
 
                 if poster:
                     bot.send_photo(message.chat.id, poster, caption=caption, parse_mode="html")
                 else:
                     bot.send_message(message.chat.id, caption, parse_mode="html")
-        # movieList = json.loads(resShowMovie.text)
-        # for item in movieList["items"]:
-        #     kinoId = item["kinopoiskId"]
-        #     kinoName = item["nameRu"]
-        #     kinoNameEn = item["nameOriginal"]
-        #     countryInfo = item["genres"]["genre"]
-        #     rateKino = item["ratingKinopoisk"]
-        #     rateImdb = item["ratingImdb"]
-        #     year = item["year"]
-        #     poster = item["posterUrl"]
 
-            # if poster:
-            #     bot.send_photo(message.chat.id, poster, caption=f"<h1>{kinoName}/{kinoNameEn}</h1>\n"
-            #                                                     f"Страна: <b>{countryInfo}</b>\n"
-            #                                                     f"Год выпуска: <b>{year}</b>\n"
-            #                                                     f"Рейтинг Кинопоиска: <b>{rateKino}</b>\n"
-            #                                                     f"Рейтинг в мире: <b>{rateImdb}", parse_mode="html")
-            # else:
-            #     bot.send_message(message.chat.id, f"<h1>{kinoName}/{kinoNameEn}</h1>\n"
-            #                                                     f"Страна: <b>{countryInfo}</b>\n"
-            #                                                     f"Год выпуска: <b>{year}</b>\n"
-            #                                                     f"Рейтинг Кинопоиска: <b>{rateKino}</b>\n"
-            #                                                     f"Рейтинг в мире: <b>{rateImdb}", parse_mode="html")
 
     else:
             bot.send_message(message.chat.id, "Ошибка кинопоиска попробуйте снова")
+
+
+def trailerMovie(idFilm):
+    urlForTrailer = f'https://kinopoiskapiunofficial.tech/api/v2.2/films/{idFilm}/videos'
+    res = requests.get(urlForTrailer, headers=headers)
+
+    if res.status_code == 200:
+        filmsTrailers = res.json()
+        for item in filmsTrailers["items"]:
+            urlVideo = item.get("url", "N/A")
+            return urlVideo
+    else:
+        print("Ошибка поиска трейлера")
+
+
 
 
 bot.polling(none_stop=True)
 
 
 
-#TODO 1. Поиск трейлера фильма
-#TODO 2. Поиск похожих фильмов
+#TODO 1. Поиск трейлера фильма - Yes
+#TODO 2. Добавить в БД 21-100 - country/21-40- genre
 #?TODO 3. Поиск сиквелов и приквелов?
 
 
