@@ -64,6 +64,7 @@ def show_info(message):
 def callback(call):
     conn = sqlite3.connect('db_genres_and_id_films.sql')
     cur = conn.cursor()
+
     cur.execute("SELECT * FROM genres")
     genres = cur.fetchall()
     info_genres = ""
@@ -73,6 +74,7 @@ def callback(call):
     bot.send_message(call.message.chat.id, info_genres, parse_mode='html')
 
     cur.execute("SELECT * FROM countries")
+    conn.commit()
     countries = cur.fetchall()
     info_countries = ""
     for c in countries:
@@ -105,7 +107,7 @@ def show_movies(message):
     infoGenre = genreUn[0][0]
 
     if numParams == 3:
-        cur.execute("SELECT id_country FROM countries WHERE name_country = ?", (userInputInfoMovie[1].capitalize(),))
+        cur.execute("SELECT id_country FROM countries WHERE name_country = ?", (userInputInfoMovie[1].capitalize() if userInputInfoMovie[1] != 'сша' else 'США',))
         countryUn = cur.fetchall()
         infoCountry = countryUn[0][0]
         urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?countries={infoCountry}&genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[2]]}&ratingFrom=4&ratingTo=10&yearFrom=1990&yearTo=3000&page={random.randint(1, 6)}'
@@ -115,7 +117,10 @@ def show_movies(message):
         urlWith = f'https://kinopoiskapiunofficial.tech/api/v2.2/films?genres={infoGenre}&order=RATING&type={genres_dict[userInputInfoMovie[1]]}&ratingFrom=4&ratingTo=10&yearFrom=1990&yearTo=3000&page={random.randint(1, 6)}'
 
     else:
-        bot.send_message(message.chat.id, "Некорректный формат вводимых данных. Попробуйте снова!", get_movies(message))
+        bot.send_message(message.chat.id, f"Некорректный формат вводимых данных. Посмотрите формат данных выше и попробуйте снова!\n")
+        bot.register_next_step_handler(message, show_movies)
+        return
+
     cur.close()
     conn.close()
 
@@ -126,8 +131,9 @@ def show_movies(message):
     if resShowMovie.status_code == 200:
         movieList = resShowMovie.json()
         if "items" in movieList:
-            #TODO фильмы должны выпадать случайным образом
-            for item in movieList["items"]:
+            items = movieList["items"]
+            random.shuffle(items)
+            for item in items[:3]:
                 kinoId = item.get("kinopoiskId", "N/A")
                 kinoName = item.get("nameRu", "N/A")
                 kinoNameEn = item.get("nameOriginal", "N/A")
@@ -174,9 +180,6 @@ def trailerMovie(idFilm):
 bot.polling(none_stop=True)
 
 
-
-#TODO 1. Поиск трейлера фильма - Yes
-#TODO 2. Добавить в БД 21-100 - country/21-40- genre
 #?TODO 3. Поиск сиквелов и приквелов?
 
 
